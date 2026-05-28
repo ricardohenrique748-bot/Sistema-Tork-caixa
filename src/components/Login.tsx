@@ -145,7 +145,7 @@ export default function Login({ onLogin }: LoginProps) {
 
         {/* Rodapé */}
         <p className="absolute bottom-6 text-white/20 text-[10px]">
-          © {new Date().getFullYear()} Tork Locações · Suzano &amp; Delta Máquinas
+          © {new Date().getFullYear()} Tork Locações
         </p>
       </div>
 
