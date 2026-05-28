@@ -1,0 +1,6 @@
+{
+  "name": "TORK LOG",
+  "description": "Sistema de Gestão de Frota e Caixa para controle individualizado de caminhões e faturamento.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
