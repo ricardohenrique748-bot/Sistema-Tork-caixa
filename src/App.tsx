@@ -152,11 +152,7 @@ export default function App() {
           <p className="text-white/50 font-medium">
             &copy; {new Date().getFullYear()} <span className="text-white font-bold">TORK LOG</span> — Todos os direitos reservados.
           </p>
-          <div className="flex gap-3 text-white/40">
-            <span>Controle Individualizado de Frota</span>
-            <span>·</span>
-            <span>Suzano &amp; Delta Máquinas Transportes</span>
-          </div>
+          <span className="text-white/40">Controle Individualizado de Frota</span>
         </div>
       </footer>
     </div>
