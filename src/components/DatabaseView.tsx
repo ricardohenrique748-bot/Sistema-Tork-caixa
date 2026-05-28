@@ -47,7 +47,7 @@ export default function DatabaseView({ transactions, trucks, onDeleteTransaction
 
   // ── State: Usuários ──
   const [users, setUsers] = useState<AppUser[]>(() =>
-    load('tork_users', [{ id: 'u-1', username: 'tork', password: '1234567', role: 'Admin', active: true }])
+    load('tork_users', [{ id: 'u-1', username: 'tork', password: '123456', role: 'Admin', active: true }])
   );
   const [newUser, setNewUser] = useState({ username: '', password: '', role: 'Viewer' as 'Admin' | 'Viewer' });
   const [showPass, setShowPass] = useState(false);
