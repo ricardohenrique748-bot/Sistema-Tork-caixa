@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react';
 import { AnimatePresence, motion } from 'motion/react';
 import { Transaction, Truck, MaintenanceAlert } from './types';
-import { INITIAL_TRUCKS, INITIAL_TRANSACTIONS, INITIAL_ALERTS } from './mockData';
 import { supabase } from './lib/supabase';
 import Header from './components/Header';
 import Dashboard from './components/Dashboard';
@@ -37,18 +36,9 @@ export default function App() {
         supabase.from('alerts').select('*'),
       ]);
 
-      const finalTrucks = tr && tr.length > 0 ? tr : INITIAL_TRUCKS;
-      const finalTx     = tx && tx.length > 0 ? tx : INITIAL_TRANSACTIONS;
-      const finalAlerts = al && al.length > 0 ? al : INITIAL_ALERTS;
-
-      // Seed database if empty
-      if (!tr || tr.length === 0) await supabase.from('trucks').insert(INITIAL_TRUCKS);
-      if (!tx || tx.length === 0) await supabase.from('transactions').insert(INITIAL_TRANSACTIONS);
-      if (!al || al.length === 0) await supabase.from('alerts').insert(INITIAL_ALERTS);
-
-      setTrucks(finalTrucks as Truck[]);
-      setTransactions(finalTx as Transaction[]);
-      setAlerts(finalAlerts as MaintenanceAlert[]);
+      setTrucks((tr ?? []) as Truck[]);
+      setTransactions((tx ?? []) as Transaction[]);
+      setAlerts((al ?? []) as MaintenanceAlert[]);
     } catch (err) {
       console.error('Supabase load error:', err);
     } finally {

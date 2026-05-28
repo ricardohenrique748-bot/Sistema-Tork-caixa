@@ -10,7 +10,7 @@ interface LoginProps {
   onLogin: () => void;
 }
 
-const CREDENTIALS = { user: 'tork', pass: 'tork2026' };
+const CREDENTIALS = { user: 'tork', pass: '1234567' };
 
 const floatingIcons = [
   { Icon: BarChart3, x: -140, y: -90,  delay: 0    },
