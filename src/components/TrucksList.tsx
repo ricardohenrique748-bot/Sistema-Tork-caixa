@@ -2,17 +2,18 @@ import { useState } from 'react';
 import { Truck, Transaction } from '../types';
 import {
   User, Truck as TruckIcon, History, Plus, CheckCircle2,
-  AlertTriangle, Ban, Wrench, X
+  AlertTriangle, Ban, Wrench, X, Trash2
 } from 'lucide-react';
 
 interface TrucksListProps {
   trucks: Truck[];
   transactions: Transaction[];
   onAddTruck: (truck: Truck) => void;
+  onDeleteTruck: (placa: string) => void;
   onFilterByTruck: (placa: string) => void;
 }
 
-export default function TrucksList({ trucks, transactions, onAddTruck, onFilterByTruck }: TrucksListProps) {
+export default function TrucksList({ trucks, transactions, onAddTruck, onDeleteTruck, onFilterByTruck }: TrucksListProps) {
   const [showAddForm, setShowAddForm] = useState(false);
   const [placa, setPlaca]       = useState('');
   const [modelo, setModelo]     = useState('');
@@ -263,6 +264,13 @@ export default function TrucksList({ trucks, transactions, onAddTruck, onFilterB
                     >
                       <History className="h-2.5 w-2.5" />Ver
                     </button>
+                    <button
+                      onClick={() => onDeleteTruck(truck.placa)}
+                      title="Excluir caminhão"
+                      className="p-1.5 rounded-lg text-[#9A8060] hover:text-rose-600 hover:bg-rose-50 transition opacity-0 group-hover:opacity-100"
+                    >
+                      <Trash2 className="h-3 w-3" />
+                    </button>
                   </div>
                 </div>
 
@@ -295,10 +303,16 @@ export default function TrucksList({ trucks, transactions, onAddTruck, onFilterB
                       : ipva.color === 'amber' ? 'bg-amber-50 text-amber-700 border-amber-200'
                       : 'bg-emerald-50 text-emerald-700 border-emerald-200'
                     }`}>{ipva.label}</span>
-                    <button onClick={() => onFilterByTruck(truck.placa)}
-                      className="flex items-center gap-1 bg-[#1A1A1A] text-white text-[9px] font-bold px-2.5 py-1.5 rounded-lg">
-                      <History className="h-3 w-3" />Ver Relatório
-                    </button>
+                    <div className="flex items-center gap-2">
+                      <button onClick={() => onFilterByTruck(truck.placa)}
+                        className="flex items-center gap-1 bg-[#1A1A1A] text-white text-[9px] font-bold px-2.5 py-1.5 rounded-lg">
+                        <History className="h-3 w-3" />Ver Relatório
+                      </button>
+                      <button onClick={() => onDeleteTruck(truck.placa)}
+                        className="p-1.5 rounded-lg text-[#9A8060] hover:text-rose-600 hover:bg-rose-50 transition">
+                        <Trash2 className="h-3.5 w-3.5" />
+                      </button>
+                    </div>
                   </div>
                 </div>
               </div>

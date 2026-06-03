@@ -89,6 +89,13 @@ export default function App() {
     if (error) console.error('Erro ao salvar caminhão:', error.message);
   };
 
+  const handleDeleteTruck = async (placa: string) => {
+    if (!window.confirm(`Excluir o caminhão ${placa}? Esta ação não pode ser desfeita.`)) return;
+    setTrucks(prev => prev.filter(t => t.placa !== placa));
+    const { error } = await supabase.from('trucks').delete().eq('placa', placa);
+    if (error) console.error('Erro ao excluir caminhão:', error.message);
+  };
+
   const handleDismissAlert = async (alertId: string) => {
     setAlerts(prev => prev.filter(a => a.id !== alertId));
     const { error } = await supabase.from('alerts').delete().eq('id', alertId);
@@ -261,7 +268,7 @@ export default function App() {
           )}
           {activeTab === 'caminhoes' && (
             <motion.div key="caminhoes" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} transition={{ duration: 0.15 }}>
-              <TrucksList trucks={trucks} transactions={transactions} onAddTruck={handleAddTruck} onFilterByTruck={handleFilterByTruckFromList} />
+              <TrucksList trucks={trucks} transactions={transactions} onAddTruck={handleAddTruck} onDeleteTruck={handleDeleteTruck} onFilterByTruck={handleFilterByTruckFromList} />
             </motion.div>
           )}
           {activeTab === 'relatorios' && (
