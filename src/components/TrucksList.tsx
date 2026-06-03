@@ -21,19 +21,35 @@ export default function TrucksList({ trucks, transactions, onAddTruck, onDeleteT
   const [vencSeguro, setVencSeguro] = useState('');
   const [kmAtual, setKmAtual]   = useState('');
   const [proxManut, setProxManut] = useState('');
+  const [placaError, setPlacaError] = useState('');
+
+  const handlePlacaChange = (val: string) => {
+    setPlaca(val);
+    const normalizado = val.trim().toUpperCase();
+    if (normalizado && trucks.some(t => t.placa === normalizado)) {
+      setPlacaError('Placa já cadastrada na frota.');
+    } else {
+      setPlacaError('');
+    }
+  };
 
   const handleAddTruckSubmit = (e: { preventDefault(): void }) => {
     e.preventDefault();
-    if (!placa) return;
+    if (!placa || placaError) return;
+    const placaNorm = placa.trim().toUpperCase();
+    if (trucks.some(t => t.placa === placaNorm)) {
+      setPlacaError('Placa já cadastrada na frota.');
+      return;
+    }
     onAddTruck({
-      placa: placa.toUpperCase(), modelo, motorista: '',
+      placa: placaNorm, modelo, motorista: '',
       statusDocumento: 'Regular',
       dataVencimentoIPVA: vencIPVA || '2026-12-31',
       dataVencimentoSeguro: vencSeguro || '2026-12-31',
       kmAtual: parseInt(kmAtual) || 0,
       proximaManutencaoKm: parseInt(proxManut) || 10000,
     });
-    setPlaca(''); setModelo('');
+    setPlaca(''); setModelo(''); setPlacaError('');
     setVencIPVA(''); setVencSeguro(''); setKmAtual(''); setProxManut('');
     setShowAddForm(false);
   };
@@ -115,8 +131,16 @@ export default function TrucksList({ trucks, transactions, onAddTruck, onDeleteT
           <form onSubmit={handleAddTruckSubmit} className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
             <div>
               <label className={labelCls}>Placa</label>
-              <input type="text" placeholder="Ex: TORK-3390" value={placa}
-                onChange={e => setPlaca(e.target.value)} className={`${inputCls} font-mono font-bold`} />
+              <input
+                type="text"
+                placeholder="Ex: TORK-3390"
+                value={placa}
+                onChange={e => handlePlacaChange(e.target.value)}
+                className={`${inputCls} font-mono font-bold ${placaError ? 'border-rose-400 focus:ring-rose-300 focus:border-rose-400' : ''}`}
+              />
+              {placaError && (
+                <p className="mt-1 text-[10px] text-rose-600 font-semibold">{placaError}</p>
+              )}
             </div>
             <div>
               <label className={labelCls}>Modelo / Fabricante</label>
