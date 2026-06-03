@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Transaction, Truck } from '../types';
 import {
   Database, Truck as TruckIcon, ArrowUpDown, Trash2, Search,
-  Users, Tag, UserPlus, Plus, X, CheckCircle, Shield,
+  Tag, UserPlus, Plus, X, CheckCircle, Shield,
   Eye, EyeOff, ToggleLeft, ToggleRight
 } from 'lucide-react';
 
@@ -14,7 +14,6 @@ interface DatabaseViewProps {
 
 // ── Types ──
 interface AppUser   { id: string; username: string; password: string; role: 'Admin' | 'Viewer'; active: boolean }
-interface Driver    { id: string; name: string; phone: string; cnh: string; truckPlaca: string }
 interface Category  { id: string; name: string; type: 'Entrada' | 'Saída'; active: boolean }
 
 const DEFAULT_CATEGORIES: Category[] = [
@@ -39,7 +38,7 @@ const inputCls = "w-full bg-white border border-[#FDDCAA] rounded-xl px-3 py-2.5
 const labelCls = "block text-[10px] font-bold text-[#5A4828] uppercase tracking-widest mb-1.5";
 
 export default function DatabaseView({ transactions, trucks, onDeleteTransaction }: DatabaseViewProps) {
-  type Tab = 'transactions' | 'trucks' | 'users' | 'drivers' | 'categories';
+  type Tab = 'transactions' | 'trucks' | 'users' | 'categories';
   const [tab, setTab] = useState<Tab>('transactions');
   const [search, setSearch] = useState('');
   const [sortField, setSortField] = useState('data');
@@ -52,11 +51,6 @@ export default function DatabaseView({ transactions, trucks, onDeleteTransaction
   const [newUser, setNewUser] = useState({ username: '', password: '', role: 'Viewer' as 'Admin' | 'Viewer' });
   const [showPass, setShowPass] = useState(false);
   const [showUserForm, setShowUserForm] = useState(false);
-
-  // ── State: Motoristas ──
-  const [drivers, setDrivers] = useState<Driver[]>(() => load('tork_drivers', []));
-  const [newDriver, setNewDriver] = useState({ name: '', phone: '', cnh: '', truckPlaca: '' });
-  const [showDriverForm, setShowDriverForm] = useState(false);
 
   // ── State: Categorias ──
   const [categories, setCategories] = useState<Category[]>(() => load('tork_categories', DEFAULT_CATEGORIES));
@@ -74,8 +68,7 @@ export default function DatabaseView({ transactions, trucks, onDeleteTransaction
 
   // Persist helpers
   const updateUsers = (v: AppUser[])   => { setUsers(v);      save('tork_users', v); };
-  const updateDrivers = (v: Driver[])  => { setDrivers(v);    save('tork_drivers', v); };
-  const updateCats = (v: Category[])   => { setCategories(v); save('tork_categories', v); };
+const updateCats = (v: Category[])   => { setCategories(v); save('tork_categories', v); };
 
   // Add handlers
   const addUser = (e: { preventDefault(): void }) => {
@@ -85,14 +78,7 @@ export default function DatabaseView({ transactions, trucks, onDeleteTransaction
     setNewUser({ username: '', password: '', role: 'Viewer' });
     setShowUserForm(false);
   };
-  const addDriver = (e: { preventDefault(): void }) => {
-    e.preventDefault();
-    if (!newDriver.name) return;
-    updateDrivers([...drivers, { id: `d-${Date.now()}`, ...newDriver }]);
-    setNewDriver({ name: '', phone: '', cnh: '', truckPlaca: '' });
-    setShowDriverForm(false);
-  };
-  const addCategory = (e: { preventDefault(): void }) => {
+const addCategory = (e: { preventDefault(): void }) => {
     e.preventDefault();
     if (!newCat.name) return;
     updateCats([...categories, { id: `cat-${Date.now()}`, ...newCat, active: true }]);
@@ -114,7 +100,6 @@ export default function DatabaseView({ transactions, trucks, onDeleteTransaction
     { id: 'transactions' as Tab, label: 'Movimentações', count: transactions.length,  icon: Database },
     { id: 'trucks'       as Tab, label: 'Caminhões',      count: trucks.length,         icon: TruckIcon },
     { id: 'users'        as Tab, label: 'Usuários',        count: users.length,          icon: Shield },
-    { id: 'drivers'      as Tab, label: 'Motoristas',      count: drivers.length,        icon: Users },
     { id: 'categories'   as Tab, label: 'Categorias',      count: categories.length,     icon: Tag },
   ];
 
@@ -311,76 +296,6 @@ export default function DatabaseView({ transactions, trucks, onDeleteTransaction
         </div>
       )}
 
-      {/* ══════════ Motoristas ══════════ */}
-      {tab === 'drivers' && (
-        <div className="space-y-4">
-          <div className="flex justify-between items-center">
-            <p className="text-xs text-[#9A8060]">Cadastro de motoristas vinculados à frota</p>
-            <button onClick={() => setShowDriverForm(v => !v)}
-              className={`flex items-center gap-2 text-xs font-bold px-3.5 py-2 rounded-xl transition ${showDriverForm ? 'bg-slate-100 text-slate-600' : 'bg-[#1A1A1A] text-white hover:bg-[#333]'}`}>
-              {showDriverForm ? <><X className="h-3.5 w-3.5" />Cancelar</> : <><Plus className="h-3.5 w-3.5" />Novo Motorista</>}
-            </button>
-          </div>
-
-          {showDriverForm && (
-            <form onSubmit={addDriver} className="bg-[#f9f9f9] border border-[#FDDCAA] rounded-2xl p-5">
-              <h3 className="font-display text-sm font-bold text-[#1A1A1A] mb-4 flex items-center gap-2"><Users className="h-4 w-4 text-[#F5A000]" />Cadastrar Motorista</h3>
-              <div className="grid grid-cols-1 sm:grid-cols-5 gap-4">
-                <div className="sm:col-span-2"><label className={labelCls}>Nome Completo *</label>
-                  <input type="text" required placeholder="Ex: João da Silva" value={newDriver.name} onChange={e => setNewDriver(d => ({...d, name: e.target.value}))} className={inputCls} /></div>
-                <div><label className={labelCls}>Telefone</label>
-                  <input type="text" placeholder="(11) 9xxxx-xxxx" value={newDriver.phone} onChange={e => setNewDriver(d => ({...d, phone: e.target.value}))} className={inputCls} /></div>
-                <div><label className={labelCls}>CNH Nº</label>
-                  <input type="text" placeholder="00000000000" value={newDriver.cnh} onChange={e => setNewDriver(d => ({...d, cnh: e.target.value}))} className={inputCls} /></div>
-                <div><label className={labelCls}>Caminhão</label>
-                  <select value={newDriver.truckPlaca} onChange={e => setNewDriver(d => ({...d, truckPlaca: e.target.value}))} className={inputCls}>
-                    <option value="">— Nenhum —</option>
-                    {trucks.map(t => <option key={t.placa} value={t.placa}>{t.placa}</option>)}
-                  </select></div>
-                <div className="flex items-end sm:col-span-5">
-                  <button type="submit" className="bg-[#1A1A1A] hover:bg-[#F5A000] text-white text-xs font-bold uppercase tracking-wider px-6 py-2.5 rounded-xl transition">Salvar Motorista</button>
-                </div>
-              </div>
-            </form>
-          )}
-
-          <div className="bg-white rounded-2xl shadow-sm border border-[#FDDCAA]/60 overflow-hidden">
-            {drivers.length === 0 ? (
-              <div className="py-12 text-center">
-                <Users className="h-10 w-10 text-[#FDDCAA] mx-auto mb-2" />
-                <p className="text-sm font-bold text-[#1A1A1A]">Nenhum motorista cadastrado</p>
-                <p className="text-xs text-[#9A8060] mt-1">Clique em "Novo Motorista" para adicionar</p>
-              </div>
-            ) : (
-              <table className="min-w-full text-xs">
-                <thead>
-                  <tr className="bg-[#f9f9f9] border-b border-[#FDDCAA]/30 text-[#9A8060] text-[10px] font-semibold uppercase tracking-wider">
-                    {['Nome','Telefone','CNH','Caminhão','Ação'].map(h => <th key={h} className="px-5 py-3 text-left">{h}</th>)}
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-gray-100">
-                  {drivers.map(d => (
-                    <tr key={d.id} className="hover:bg-[#f9f9f9] transition-colors">
-                      <td className="px-5 py-3 font-semibold text-[#1A1A1A]">{d.name}</td>
-                      <td className="px-5 py-3 text-[#7A6040]">{d.phone || '—'}</td>
-                      <td className="px-5 py-3 font-mono text-[#7A6040]">{d.cnh || '—'}</td>
-                      <td className="px-5 py-3">
-                        {d.truckPlaca
-                          ? <span className="font-mono font-bold text-[10px] bg-[#f9f9f9] border border-[#FDDCAA] px-2 py-0.5 rounded-md">{d.truckPlaca}</span>
-                          : <span className="text-[#9A8060]">—</span>}
-                      </td>
-                      <td className="px-5 py-3">
-                        <button onClick={() => updateDrivers(drivers.filter(x => x.id !== d.id))}
-                          className="p-1.5 rounded-lg text-[#9A8060] hover:text-rose-600 hover:bg-rose-50 transition"><Trash2 className="h-3.5 w-3.5" /></button>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            )}
-          </div>
-        </div>
-      )}
 
       {/* ══════════ Categorias ══════════ */}
       {tab === 'categories' && (
