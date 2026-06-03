@@ -22,12 +22,13 @@ const floatingIcons = [
 ];
 
 export default function Login({ onLogin }: LoginProps) {
-  const [user, setUser]         = useState('');
+  const savedUser = localStorage.getItem('tork_remembered_user') ?? '';
+  const [user, setUser]         = useState(savedUser);
   const [pass, setPass]         = useState('');
   const [showPass, setShowPass] = useState(false);
   const [error, setError]       = useState('');
   const [loading, setLoading]   = useState(false);
-  const [remember, setRemember] = useState(false);
+  const [remember, setRemember] = useState(savedUser !== '');
 
   const handleSubmit = (e: { preventDefault(): void }) => {
     e.preventDefault();
@@ -35,7 +36,12 @@ export default function Login({ onLogin }: LoginProps) {
     setLoading(true);
     setTimeout(() => {
       if (user.trim() === CREDENTIALS.user && pass === CREDENTIALS.pass) {
-        if (remember) localStorage.setItem('tork_auth', '1');
+        if (remember) {
+          localStorage.setItem('tork_auth', '1');
+          localStorage.setItem('tork_remembered_user', user.trim());
+        } else {
+          localStorage.removeItem('tork_remembered_user');
+        }
         onLogin();
       } else {
         setError('Usuário ou senha incorretos.');

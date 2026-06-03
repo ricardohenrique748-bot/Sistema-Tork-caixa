@@ -20,6 +20,14 @@ export default function App() {
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [alerts, setAlerts]         = useState<MaintenanceAlert[]>([]);
   const [initialFilterTruck, setInitialFilterTruck] = useState('');
+  const [trashedTransactions, setTrashedTransactions] = useState<Transaction[]>(
+    () => { try { return JSON.parse(localStorage.getItem('tork_trash') ?? '[]'); } catch { return []; } }
+  );
+
+  const saveTrashed = (v: Transaction[]) => {
+    setTrashedTransactions(v);
+    localStorage.setItem('tork_trash', JSON.stringify(v));
+  };
 
   // ── Load data from Supabase ──
   useEffect(() => {
@@ -55,10 +63,24 @@ export default function App() {
   };
 
   const handleDeleteTransaction = async (id: string) => {
-    if (!window.confirm('Deseja realmente excluir esta movimentação permanentemente?')) return;
+    if (!window.confirm('Mover esta movimentação para a lixeira?')) return;
+    const tx = transactions.find(t => t.id === id);
+    if (tx) saveTrashed([tx, ...trashedTransactions]);
     setTransactions(prev => prev.filter(t => t.id !== id));
     const { error } = await supabase.from('transactions').delete().eq('id', id);
     if (error) console.error('Erro ao excluir movimentação:', error.message);
+  };
+
+  const handleRestoreTransaction = async (tx: Transaction) => {
+    saveTrashed(trashedTransactions.filter(t => t.id !== tx.id));
+    setTransactions(prev => [tx, ...prev]);
+    const { error } = await supabase.from('transactions').insert(tx);
+    if (error) console.error('Erro ao restaurar movimentação:', error.message);
+  };
+
+  const handlePermanentDeleteTransaction = (id: string) => {
+    if (!window.confirm('Excluir permanentemente? Esta ação não pode ser desfeita.')) return;
+    saveTrashed(trashedTransactions.filter(t => t.id !== id));
   };
 
   const handleAddTruck = async (newTruck: Truck) => {
@@ -249,7 +271,14 @@ export default function App() {
           )}
           {activeTab === 'database' && (
             <motion.div key="database" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} transition={{ duration: 0.15 }}>
-              <DatabaseView transactions={transactions} trucks={trucks} onDeleteTransaction={handleDeleteTransaction} />
+              <DatabaseView
+                transactions={transactions}
+                trucks={trucks}
+                onDeleteTransaction={handleDeleteTransaction}
+                trashedTransactions={trashedTransactions}
+                onRestoreTransaction={handleRestoreTransaction}
+                onPermanentDeleteTransaction={handlePermanentDeleteTransaction}
+              />
             </motion.div>
           )}
         </AnimatePresence>

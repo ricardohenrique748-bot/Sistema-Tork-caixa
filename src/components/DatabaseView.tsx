@@ -3,13 +3,16 @@ import { Transaction, Truck } from '../types';
 import {
   Database, Truck as TruckIcon, ArrowUpDown, Trash2, Search,
   Tag, UserPlus, Plus, X, CheckCircle, Shield,
-  Eye, EyeOff, ToggleLeft, ToggleRight
+  Eye, EyeOff, ToggleLeft, ToggleRight, RotateCcw, Trash
 } from 'lucide-react';
 
 interface DatabaseViewProps {
   transactions: Transaction[];
   trucks: Truck[];
   onDeleteTransaction: (id: string) => void;
+  trashedTransactions: Transaction[];
+  onRestoreTransaction: (tx: Transaction) => void;
+  onPermanentDeleteTransaction: (id: string) => void;
 }
 
 // ── Types ──
@@ -37,9 +40,10 @@ function save<T>(key: string, val: T) { localStorage.setItem(key, JSON.stringify
 const inputCls = "w-full bg-white border border-[#FDDCAA] rounded-xl px-3 py-2.5 text-xs text-[#1A1A1A] placeholder-[#9A8060] focus:outline-none focus:ring-2 focus:ring-[#F5A000]/40 focus:border-[#F5A000] transition";
 const labelCls = "block text-[10px] font-bold text-[#5A4828] uppercase tracking-widest mb-1.5";
 
-export default function DatabaseView({ transactions, trucks, onDeleteTransaction }: DatabaseViewProps) {
+export default function DatabaseView({ transactions, trucks, onDeleteTransaction, trashedTransactions, onRestoreTransaction, onPermanentDeleteTransaction }: DatabaseViewProps) {
   type Tab = 'transactions' | 'trucks' | 'users' | 'categories';
   const [tab, setTab] = useState<Tab>('transactions');
+  const [showTrash, setShowTrash] = useState(false);
   const [search, setSearch] = useState('');
   const [sortField, setSortField] = useState('data');
   const [sortAsc, setSortAsc] = useState(false);
@@ -139,48 +143,147 @@ const addCategory = (e: { preventDefault(): void }) => {
 
       {/* ══════════ Movimentações ══════════ */}
       {tab === 'transactions' && (
-        <div className="bg-white rounded-2xl shadow-sm border border-[#FDDCAA]/60 overflow-hidden">
-          <div className="bg-[#f9f9f9] border-b border-[#FDDCAA]/40 px-5 py-3 flex justify-between items-center">
-            <span className="text-xs font-bold text-[#1A1A1A] uppercase tracking-widest">Movimentações</span>
-            <span className="text-[10px] font-bold text-[#5A4828] bg-[#FFF0D4] px-2.5 py-1 rounded-full">{filteredTx.length} de {transactions.length}</span>
+        <div className="space-y-3">
+          {/* Cabeçalho com toggle lixeira */}
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              {showTrash ? (
+                <span className="flex items-center gap-1.5 text-xs font-bold text-rose-600">
+                  <Trash className="h-3.5 w-3.5" />
+                  Lixeira
+                  {trashedTransactions.length > 0 && (
+                    <span className="bg-rose-100 text-rose-600 text-[10px] font-bold px-1.5 py-0.5 rounded-full">{trashedTransactions.length}</span>
+                  )}
+                </span>
+              ) : (
+                <span className="text-xs font-bold text-[#1A1A1A] uppercase tracking-widest">Movimentações</span>
+              )}
+            </div>
+            <button
+              onClick={() => setShowTrash(v => !v)}
+              className={`flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-xl border transition ${
+                showTrash
+                  ? 'bg-[#1A1A1A] text-white border-[#1A1A1A]'
+                  : 'bg-white text-[#5A4828] border-[#FDDCAA] hover:border-rose-300 hover:text-rose-600'
+              }`}
+            >
+              <Trash className="h-3 w-3" />
+              {showTrash ? 'Ver Ativas' : `Lixeira${trashedTransactions.length > 0 ? ` (${trashedTransactions.length})` : ''}`}
+            </button>
           </div>
-          <div className="overflow-x-auto">
-            <table className="min-w-full text-xs">
-              <thead>
-                <tr className="bg-[#f9f9f9] border-b border-[#FDDCAA]/30 text-[#9A8060] text-[10px] font-semibold uppercase tracking-wider">
-                  {[['data','Data'],['placa','Placa'],['categoria','Categoria'],['empresaFavorecido','Favorecido']].map(([f,l]) => (
-                    <th key={f} className="px-4 py-3 text-left"><SortBtn field={f} label={l} /></th>
-                  ))}
-                  <th className="px-4 py-3 text-left">Histórico</th>
-                  <th className="px-4 py-3 text-left"><SortBtn field="tipo" label="Tipo" /></th>
-                  <th className="px-4 py-3 text-right"><SortBtn field="valor" label="Valor" /></th>
-                  <th className="px-4 py-3 text-left"><SortBtn field="status" label="Status" /></th>
-                  <th className="px-4 py-3 text-center">Ação</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-gray-100">
-                {filteredTx.map(t => (
-                  <tr key={t.id} className="hover:bg-[#f9f9f9] transition-colors">
-                    <td className="px-4 py-2.5 font-mono text-[#5A4828]">{new Date(t.data).toLocaleDateString('pt-BR')}</td>
-                    <td className="px-4 py-2.5"><span className="font-mono font-bold text-[10px] bg-[#f9f9f9] border border-[#FDDCAA] px-1.5 py-0.5 rounded-md">{t.placa}</span></td>
-                    <td className="px-4 py-2.5 text-[#7A6040]">{t.categoria}</td>
-                    <td className="px-4 py-2.5 font-semibold text-[#1A1A1A] max-w-[130px] truncate">{t.empresaFavorecido}</td>
-                    <td className="px-4 py-2.5 text-[#7A6040] max-w-[150px] truncate" title={t.descricaoHistorico}>{t.descricaoHistorico}</td>
-                    <td className="px-4 py-2.5">
-                      <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${t.tipo === 'Entrada' ? 'bg-emerald-50 text-emerald-700' : 'bg-rose-50 text-rose-600'}`}>{t.tipo}</span>
-                    </td>
-                    <td className="px-4 py-2.5 text-right font-mono font-bold">{fmt(t.valor)}</td>
-                    <td className="px-4 py-2.5">
-                      <span className={`px-2 py-0.5 rounded-full text-[10px] font-semibold border ${t.status === 'Pago' ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : t.status === 'Pendente' ? 'bg-amber-50 text-amber-700 border-amber-200' : 'bg-blue-50 text-blue-700 border-blue-200'}`}>{t.status}</span>
-                    </td>
-                    <td className="px-4 py-2.5 text-center">
-                      <button onClick={() => onDeleteTransaction(t.id)} className="p-1.5 rounded-lg text-[#9A8060] hover:text-rose-600 hover:bg-rose-50 transition"><Trash2 className="h-3.5 w-3.5" /></button>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+
+          {/* Tabela ativa */}
+          {!showTrash && (
+            <div className="bg-white rounded-2xl shadow-sm border border-[#FDDCAA]/60 overflow-hidden">
+              <div className="bg-[#f9f9f9] border-b border-[#FDDCAA]/40 px-5 py-3 flex justify-between items-center">
+                <span className="text-xs font-bold text-[#1A1A1A] uppercase tracking-widest">Movimentações</span>
+                <span className="text-[10px] font-bold text-[#5A4828] bg-[#FFF0D4] px-2.5 py-1 rounded-full">{filteredTx.length} de {transactions.length}</span>
+              </div>
+              <div className="overflow-x-auto">
+                <table className="min-w-full text-xs">
+                  <thead>
+                    <tr className="bg-[#f9f9f9] border-b border-[#FDDCAA]/30 text-[#9A8060] text-[10px] font-semibold uppercase tracking-wider">
+                      {[['data','Data'],['placa','Placa'],['categoria','Categoria'],['empresaFavorecido','Favorecido']].map(([f,l]) => (
+                        <th key={f} className="px-4 py-3 text-left"><SortBtn field={f} label={l} /></th>
+                      ))}
+                      <th className="px-4 py-3 text-left">Histórico</th>
+                      <th className="px-4 py-3 text-left"><SortBtn field="tipo" label="Tipo" /></th>
+                      <th className="px-4 py-3 text-right"><SortBtn field="valor" label="Valor" /></th>
+                      <th className="px-4 py-3 text-left"><SortBtn field="status" label="Status" /></th>
+                      <th className="px-4 py-3 text-center">Ação</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-gray-100">
+                    {filteredTx.map(t => (
+                      <tr key={t.id} className="hover:bg-[#f9f9f9] transition-colors">
+                        <td className="px-4 py-2.5 font-mono text-[#5A4828]">{new Date(t.data).toLocaleDateString('pt-BR')}</td>
+                        <td className="px-4 py-2.5"><span className="font-mono font-bold text-[10px] bg-[#f9f9f9] border border-[#FDDCAA] px-1.5 py-0.5 rounded-md">{t.placa}</span></td>
+                        <td className="px-4 py-2.5 text-[#7A6040]">{t.categoria}</td>
+                        <td className="px-4 py-2.5 font-semibold text-[#1A1A1A] max-w-[130px] truncate">{t.empresaFavorecido}</td>
+                        <td className="px-4 py-2.5 text-[#7A6040] max-w-[150px] truncate" title={t.descricaoHistorico}>{t.descricaoHistorico}</td>
+                        <td className="px-4 py-2.5">
+                          <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${t.tipo === 'Entrada' ? 'bg-emerald-50 text-emerald-700' : 'bg-rose-50 text-rose-600'}`}>{t.tipo}</span>
+                        </td>
+                        <td className="px-4 py-2.5 text-right font-mono font-bold">{fmt(t.valor)}</td>
+                        <td className="px-4 py-2.5">
+                          <span className={`px-2 py-0.5 rounded-full text-[10px] font-semibold border ${t.status === 'Pago' ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : t.status === 'Pendente' ? 'bg-amber-50 text-amber-700 border-amber-200' : 'bg-blue-50 text-blue-700 border-blue-200'}`}>{t.status}</span>
+                        </td>
+                        <td className="px-4 py-2.5 text-center">
+                          <button onClick={() => onDeleteTransaction(t.id)} className="p-1.5 rounded-lg text-[#9A8060] hover:text-rose-600 hover:bg-rose-50 transition"><Trash2 className="h-3.5 w-3.5" /></button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          )}
+
+          {/* Lixeira */}
+          {showTrash && (
+            <div className="bg-white rounded-2xl shadow-sm border border-rose-200/60 overflow-hidden">
+              <div className="bg-rose-50 border-b border-rose-200/40 px-5 py-3 flex justify-between items-center">
+                <span className="text-xs font-bold text-rose-700 uppercase tracking-widest flex items-center gap-1.5">
+                  <Trash className="h-3.5 w-3.5" /> Itens excluídos
+                </span>
+                <span className="text-[10px] font-bold text-rose-600 bg-rose-100 px-2.5 py-1 rounded-full">{trashedTransactions.length} item(ns)</span>
+              </div>
+              {trashedTransactions.length === 0 ? (
+                <div className="py-12 text-center">
+                  <Trash className="h-8 w-8 text-gray-200 mx-auto mb-2" />
+                  <p className="text-xs text-[#9A8060]">Lixeira vazia</p>
+                </div>
+              ) : (
+                <div className="overflow-x-auto">
+                  <table className="min-w-full text-xs">
+                    <thead>
+                      <tr className="bg-rose-50 border-b border-rose-100 text-[#9A8060] text-[10px] font-semibold uppercase tracking-wider">
+                        <th className="px-4 py-3 text-left">Data</th>
+                        <th className="px-4 py-3 text-left">Placa</th>
+                        <th className="px-4 py-3 text-left">Categoria</th>
+                        <th className="px-4 py-3 text-left">Favorecido</th>
+                        <th className="px-4 py-3 text-left">Tipo</th>
+                        <th className="px-4 py-3 text-right">Valor</th>
+                        <th className="px-4 py-3 text-center">Ações</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-rose-50">
+                      {trashedTransactions.map(t => (
+                        <tr key={t.id} className="hover:bg-rose-50/40 transition-colors opacity-75">
+                          <td className="px-4 py-2.5 font-mono text-[#5A4828]">{new Date(t.data).toLocaleDateString('pt-BR')}</td>
+                          <td className="px-4 py-2.5"><span className="font-mono font-bold text-[10px] bg-[#f9f9f9] border border-[#FDDCAA] px-1.5 py-0.5 rounded-md">{t.placa}</span></td>
+                          <td className="px-4 py-2.5 text-[#7A6040]">{t.categoria}</td>
+                          <td className="px-4 py-2.5 font-semibold text-[#1A1A1A] max-w-[130px] truncate">{t.empresaFavorecido}</td>
+                          <td className="px-4 py-2.5">
+                            <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${t.tipo === 'Entrada' ? 'bg-emerald-50 text-emerald-700' : 'bg-rose-50 text-rose-600'}`}>{t.tipo}</span>
+                          </td>
+                          <td className="px-4 py-2.5 text-right font-mono font-bold">{fmt(t.valor)}</td>
+                          <td className="px-4 py-2.5">
+                            <div className="flex items-center justify-center gap-1">
+                              <button
+                                onClick={() => onRestoreTransaction(t)}
+                                title="Restaurar"
+                                className="flex items-center gap-1 px-2 py-1 rounded-lg text-emerald-700 bg-emerald-50 hover:bg-emerald-100 text-[10px] font-bold transition"
+                              >
+                                <RotateCcw className="h-3 w-3" /> Restaurar
+                              </button>
+                              <button
+                                onClick={() => onPermanentDeleteTransaction(t.id)}
+                                title="Excluir definitivamente"
+                                className="p-1.5 rounded-lg text-rose-400 hover:text-rose-700 hover:bg-rose-100 transition"
+                              >
+                                <Trash2 className="h-3.5 w-3.5" />
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </div>
+          )}
         </div>
       )}
 
