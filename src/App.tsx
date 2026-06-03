@@ -93,17 +93,82 @@ export default function App() {
   if (!isAuthenticated) return <Login onLogin={() => setIsAuthenticated(true)} />;
 
   if (loading) return (
-    <div className="min-h-screen bg-white flex flex-col items-center justify-center gap-4">
-      <div className="overflow-hidden" style={{ height: '52px' }}>
-        <img src="/tork-logo.jpg" alt="Tork" style={{ height: '92px', width: 'auto' }} />
+    <div className="min-h-screen bg-[#111111] flex flex-col items-center justify-center gap-8 relative overflow-hidden">
+
+      {/* Glow de fundo */}
+      <div className="absolute inset-0 pointer-events-none" style={{
+        background: 'radial-gradient(ellipse 50% 40% at 50% 50%, rgba(245,160,0,0.18) 0%, transparent 70%)'
+      }} />
+
+      {/* Rings + logo */}
+      <div className="relative flex items-center justify-center">
+        {/* Ring externo pulsando */}
+        <motion.div
+          className="absolute w-44 h-44 rounded-full border border-[#F5A000]/15"
+          animate={{ scale: [1, 1.25, 1], opacity: [0.2, 0.5, 0.2] }}
+          transition={{ duration: 2.4, repeat: Infinity, ease: 'easeInOut' }}
+        />
+        {/* Ring médio */}
+        <motion.div
+          className="absolute w-32 h-32 rounded-full border border-[#F5A000]/25"
+          animate={{ scale: [1, 1.18, 1], opacity: [0.35, 0.7, 0.35] }}
+          transition={{ duration: 2.4, repeat: Infinity, ease: 'easeInOut', delay: 0.4 }}
+        />
+        {/* Ring interno */}
+        <motion.div
+          className="absolute w-20 h-20 rounded-full border border-[#F5A000]/40"
+          animate={{ scale: [1, 1.1, 1], opacity: [0.5, 1, 0.5] }}
+          transition={{ duration: 2.4, repeat: Infinity, ease: 'easeInOut', delay: 0.8 }}
+        />
+
+        {/* Logo pulsando */}
+        <motion.div
+          animate={{ opacity: [0.8, 1, 0.8] }}
+          transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut' }}
+          className="overflow-hidden"
+          style={{ height: '52px', width: '40px' }}
+        >
+          <img
+            src="/tork-logo.jpg"
+            alt="Tork"
+            style={{ height: '94px', width: 'auto', mixBlendMode: 'screen' }}
+          />
+        </motion.div>
       </div>
-      <div className="flex items-center gap-3 text-[#9A8060] text-sm">
-        <svg className="animate-spin h-5 w-5 text-[#F5A000]" viewBox="0 0 24 24" fill="none">
-          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/>
-          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"/>
-        </svg>
-        Carregando dados da frota...
-      </div>
+
+      {/* Nome da marca */}
+      <motion.div
+        className="text-center"
+        initial={{ opacity: 0, y: 12 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.3, duration: 0.5 }}
+      >
+        <p className="font-display text-2xl font-bold text-white tracking-tight">
+          Tork <span className="text-[#F5A000]">Locações</span>
+        </p>
+        <p className="text-[#9A8060] text-sm mt-1">Sistema de Gestão de Frotas</p>
+      </motion.div>
+
+      {/* Dots bouncing */}
+      <motion.div
+        className="flex items-center gap-3 text-[#9A8060] text-xs"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ delay: 0.6 }}
+      >
+        <div className="flex gap-1.5">
+          {[0, 1, 2].map(i => (
+            <motion.div
+              key={i}
+              className="w-2 h-2 rounded-full bg-[#F5A000]"
+              animate={{ y: [0, -8, 0] }}
+              transition={{ duration: 0.7, delay: i * 0.15, repeat: Infinity, ease: 'easeInOut' }}
+            />
+          ))}
+        </div>
+        <span>Carregando dados da frota...</span>
+      </motion.div>
+
     </div>
   );
 
