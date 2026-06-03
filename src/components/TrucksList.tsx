@@ -16,7 +16,6 @@ export default function TrucksList({ trucks, transactions, onAddTruck, onFilterB
   const [showAddForm, setShowAddForm] = useState(false);
   const [placa, setPlaca]       = useState('');
   const [modelo, setModelo]     = useState('');
-  const [motorista, setMotorista] = useState('');
   const [vencIPVA, setVencIPVA] = useState('');
   const [vencSeguro, setVencSeguro] = useState('');
   const [kmAtual, setKmAtual]   = useState('');
@@ -24,16 +23,16 @@ export default function TrucksList({ trucks, transactions, onAddTruck, onFilterB
 
   const handleAddTruckSubmit = (e: { preventDefault(): void }) => {
     e.preventDefault();
-    if (!placa || !modelo || !motorista) return;
+    if (!placa) return;
     onAddTruck({
-      placa: placa.toUpperCase(), modelo, motorista,
+      placa: placa.toUpperCase(), modelo, motorista: '',
       statusDocumento: 'Regular',
       dataVencimentoIPVA: vencIPVA || '2026-12-31',
       dataVencimentoSeguro: vencSeguro || '2026-12-31',
       kmAtual: parseInt(kmAtual) || 0,
       proximaManutencaoKm: parseInt(proxManut) || 10000,
     });
-    setPlaca(''); setModelo(''); setMotorista('');
+    setPlaca(''); setModelo('');
     setVencIPVA(''); setVencSeguro(''); setKmAtual(''); setProxManut('');
     setShowAddForm(false);
   };
@@ -114,19 +113,14 @@ export default function TrucksList({ trucks, transactions, onAddTruck, onFilterB
           </h3>
           <form onSubmit={handleAddTruckSubmit} className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
             <div>
-              <label className={labelCls}>Placa *</label>
-              <input type="text" required placeholder="Ex: TORK-3390" value={placa}
+              <label className={labelCls}>Placa</label>
+              <input type="text" placeholder="Ex: TORK-3390" value={placa}
                 onChange={e => setPlaca(e.target.value)} className={`${inputCls} font-mono font-bold`} />
             </div>
             <div>
-              <label className={labelCls}>Modelo / Fabricante *</label>
-              <input type="text" required placeholder="Ex: Volvo FH 540" value={modelo}
+              <label className={labelCls}>Modelo / Fabricante</label>
+              <input type="text" placeholder="Ex: Volvo FH 540" value={modelo}
                 onChange={e => setModelo(e.target.value)} className={inputCls} />
-            </div>
-            <div>
-              <label className={labelCls}>Motorista Titular *</label>
-              <input type="text" required placeholder="Ex: Sebastião Souza" value={motorista}
-                onChange={e => setMotorista(e.target.value)} className={inputCls} />
             </div>
             <div>
               <label className={labelCls}>KM Atual do Painel</label>

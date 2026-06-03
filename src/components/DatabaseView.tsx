@@ -72,7 +72,7 @@ export default function DatabaseView({ transactions, trucks, onDeleteTransaction
 
   // Persist helpers
   const updateUsers = (v: AppUser[])   => { setUsers(v);      save('tork_users', v); };
-const updateCats = (v: Category[])   => { setCategories(v); save('tork_categories', v); };
+  const updateCats = (v: Category[])   => { setCategories(v); save('tork_categories', v); };
 
   // Add handlers
   const addUser = (e: { preventDefault(): void }) => {
@@ -82,7 +82,7 @@ const updateCats = (v: Category[])   => { setCategories(v); save('tork_categorie
     setNewUser({ username: '', password: '', role: 'Viewer' });
     setShowUserForm(false);
   };
-const addCategory = (e: { preventDefault(): void }) => {
+  const addCategory = (e: { preventDefault(): void }) => {
     e.preventDefault();
     if (!newCat.name) return;
     updateCats([...categories, { id: `cat-${Date.now()}`, ...newCat, active: true }]);
