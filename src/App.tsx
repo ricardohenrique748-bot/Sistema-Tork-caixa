@@ -9,10 +9,15 @@ import TrucksList from './components/TrucksList';
 import Reports from './components/Reports';
 import Login from './components/Login';
 import DatabaseView from './components/DatabaseView';
+import AdminPanel from './components/AdminPanel';
 
 export default function App() {
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(
     () => localStorage.getItem('tork_auth') === '1'
+  );
+  const [isMaster, setIsMaster] = useState(false);
+  const [systemDisabled, setSystemDisabled] = useState(
+    () => localStorage.getItem('tork_system_disabled') === '1'
   );
   const [activeTab, setActiveTab]   = useState('inicio');
   const [loading, setLoading]       = useState(true);
@@ -124,7 +129,61 @@ export default function App() {
     setIsAuthenticated(false);
   };
 
-  if (!isAuthenticated) return <Login onLogin={() => setIsAuthenticated(true)} />;
+  const handleLogin = (master: boolean) => {
+    setIsAuthenticated(true);
+    setIsMaster(master);
+  };
+
+  const handleToggleSystem = () => {
+    const next = !systemDisabled;
+    setSystemDisabled(next);
+    localStorage.setItem('tork_system_disabled', next ? '1' : '0');
+  };
+
+  if (!isAuthenticated) return <Login onLogin={handleLogin} />;
+
+  if (systemDisabled && !isMaster) return (
+    <div className="min-h-screen bg-[#0a0a0a] flex flex-col items-center justify-center px-6 font-mono text-white select-none">
+
+      {/* Código de erro */}
+      <p className="text-[120px] sm:text-[180px] font-black leading-none text-white/5 absolute pointer-events-none">
+        404
+      </p>
+
+      <div className="relative flex flex-col items-center gap-6 text-center">
+
+        {/* Badge de status */}
+        <div className="flex items-center gap-2 bg-rose-500/10 border border-rose-500/30 text-rose-400 text-[11px] font-bold uppercase tracking-widest px-4 py-1.5 rounded-full">
+          <span className="w-1.5 h-1.5 rounded-full bg-rose-500 animate-pulse" />
+          503 Service Unavailable
+        </div>
+
+        {/* Título */}
+        <div>
+          <h1 className="text-4xl sm:text-5xl font-black text-white tracking-tight">
+            Erro <span className="text-[#F5A000]">404</span>
+          </h1>
+          <p className="text-white/30 text-sm mt-3 max-w-sm leading-relaxed">
+            A página que você tentou acessar não está disponível no momento.
+            O servidor retornou um erro inesperado.
+          </p>
+        </div>
+
+        {/* Caixa de detalhes estilo terminal */}
+        <div className="w-full max-w-sm bg-white/5 border border-white/10 rounded-xl p-4 text-left text-[11px] text-white/40 leading-6">
+          <p><span className="text-[#F5A000]">GET</span> /dashboard → <span className="text-rose-400">404 Not Found</span></p>
+          <p><span className="text-white/20">timestamp:</span> {new Date().toISOString()}</p>
+          <p><span className="text-white/20">message:</span> Resource temporarily unavailable</p>
+          <p><span className="text-white/20">code:</span> SYSTEM_MAINTENANCE</p>
+        </div>
+
+        <p className="text-white/20 text-[10px]">
+          Se o problema persistir, entre em contato com o suporte.
+        </p>
+      </div>
+
+    </div>
+  );
 
   if (loading) return (
     <div className="min-h-screen bg-white flex flex-col items-center justify-center gap-5">
@@ -252,6 +311,7 @@ export default function App() {
         totalBalance={totalBalance}
         username="tork"
         onLogout={handleLogout}
+        isMaster={isMaster}
       />
 
       <main className="flex-grow max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-8 transition-all">
@@ -286,6 +346,11 @@ export default function App() {
                 onRestoreTransaction={handleRestoreTransaction}
                 onPermanentDeleteTransaction={handlePermanentDeleteTransaction}
               />
+            </motion.div>
+          )}
+          {activeTab === 'admin' && isMaster && (
+            <motion.div key="admin" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} transition={{ duration: 0.15 }}>
+              <AdminPanel systemDisabled={systemDisabled} onToggleSystem={handleToggleSystem} />
             </motion.div>
           )}
         </AnimatePresence>

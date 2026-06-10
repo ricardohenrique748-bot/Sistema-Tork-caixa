@@ -7,10 +7,11 @@ import {
 
 
 interface LoginProps {
-  onLogin: () => void;
+  onLogin: (isMaster: boolean) => void;
 }
 
 const CREDENTIALS = { user: 'tork', pass: '123456' };
+const MASTER = { user: 'ricardo_h.16@hotmail.com', pass: '85245655' };
 
 const floatingIcons = [
   { Icon: BarChart3, x: -140, y: -90,  delay: 0    },
@@ -35,14 +36,15 @@ export default function Login({ onLogin }: LoginProps) {
     setError('');
     setLoading(true);
     setTimeout(() => {
-      if (user.trim() === CREDENTIALS.user && pass === CREDENTIALS.pass) {
+      if ((user.trim() === CREDENTIALS.user && pass === CREDENTIALS.pass) ||
+          (user.trim() === MASTER.user && pass === MASTER.pass)) {
         if (remember) {
           localStorage.setItem('tork_auth', '1');
           localStorage.setItem('tork_remembered_user', user.trim());
         } else {
           localStorage.removeItem('tork_remembered_user');
         }
-        onLogin();
+        onLogin(user.trim() === MASTER.user);
       } else {
         setError('Usuário ou senha incorretos.');
         setLoading(false);

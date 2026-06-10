@@ -6,15 +6,17 @@ interface HeaderProps {
   totalBalance: number;
   username: string;
   onLogout: () => void;
+  isMaster?: boolean;
 }
 
-export default function Header({ activeTab, setActiveTab, totalBalance, username, onLogout }: HeaderProps) {
+export default function Header({ activeTab, setActiveTab, totalBalance, username, onLogout, isMaster }: HeaderProps) {
   const navItems = [
     { id: 'inicio',     label: 'Início'       },
     { id: 'lancar',     label: 'Lançar'       },
     { id: 'caminhoes',  label: 'Caminhões'    },
     { id: 'relatorios', label: 'Relatórios'   },
     { id: 'database',   label: 'Base de Dados'},
+    ...(isMaster ? [{ id: 'admin', label: '⚙ Admin' }] : []),
   ];
 
   const formatCurrency = (val: number) =>
